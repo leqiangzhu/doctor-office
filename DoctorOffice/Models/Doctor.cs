@@ -34,7 +34,7 @@ namespace DoctorOffice.Models
                 Doctor newDoctor = (Doctor) otherDoctor;
                 bool idEquality = this.GetId() == newDoctor.GetId();
                 bool nameEquality = this.GetName() == newDoctor.GetName();
-                return(idEquality && specialtyEquality);
+                return(idEquality && nameEquality);
             }
         }
         public override int GetHashCode()
@@ -185,12 +185,69 @@ namespace DoctorOffice.Models
             }
             return patients;
         }
-        public void AddSpecialty(Specialty newSpecialty)
-        {
 
+       
+            public void AddSpecialty(Specialty newSpecialty)
+            {
+            MySqlConnection conn = DB.Connection();
+            conn.Open();
+
+            var cmd = conn.CreateCommand() as MySqlCommand;
+            cmd.CommandText = @"INSERT INTO doctors_specialties (doctor_id, specialties_id) VALUES (@DoctorId, @SpecialtyId);";
+
+            MySqlParameter doctor_id = new MySqlParameter();
+            doctor_id.ParameterName = "@DoctorId";
+            doctor_id.Value = _id;
+            cmd.Parameters.Add(doctor_id);
+
+            MySqlParameter specialties_id = new MySqlParameter();
+            specialties_id.ParameterName = "@SpecialtyId";
+            specialties_id.Value = newSpecialty.GetId();
+            cmd.Parameters.Add(specialties_id);
+
+            cmd.ExecuteNonQuery();
+
+            conn.Close();
+            if (conn != null)
+            {
+                conn.Dispose();
+            }
         }
+
         public List<Specialty> GetSpecialty()
         {
+            MySqlConnection conn=DB.Connection();
+            conn.Open();   
+
+            var cmd =conn.CreateCommand() as MySqlCommand;
+            
+            cmd.CommandText=@"SELECT specialties.* FROM doctors 
+            JOIN doctors_specialties ON (doctors.id = doctors_specialties.doctors_id)
+            JOIN doctors_specialties ON (specialties.id=doctors_specialties.specialties_id)
+            WHERE doctors.id=@doctorIdParameter;";
+
+            MySqlParameter doctorIdParameter = new MySqlParameter();
+            doctorIdParameter.ParameterName = "@doctorIdParameter";
+            doctorIdParameter.Value = this._id;
+            cmd.Parameters.Add(doctorIdParameter);
+
+            MySqlDataReader rdr = cmd.ExecuteReader() as MySqlDataReader;
+            List<Specialty> specialties = new List<Specialty> {};
+
+            while(rdr.Read())
+            {
+                int SpecialtyId = rdr.GetInt32(0);
+                string SpecialtyName = rdr.GetString(1);
+                Specialty newSpecialty = new Specialty(SpecialtyName, SpecialtyId);
+                specialties.Add(newSpecialty); 
+            }
+
+            conn.Close();
+            if(conn !=null)
+            {
+                conn.Dispose();
+            }
+            return specialties;
 
         }
                  

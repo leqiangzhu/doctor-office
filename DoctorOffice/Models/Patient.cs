@@ -66,7 +66,7 @@ namespace DoctorOffice.Models
             conn.Open();
 
             var cmd=conn.CreateCommand() as MySqlCommand;
-            cmd.CommandText="@SELECT * FROM patients;";
+            cmd.CommandText=@"SELECT * FROM patients;";
 
             var rdr =cmd.ExecuteReader() as MySqlDataReader;
 
@@ -128,11 +128,11 @@ namespace DoctorOffice.Models
             conn.Open();
 
             var cmd =conn.CreateCommand() as MySqlCommand;
-            cmd.CommandText="@INSERT INTO patients_doctors (patients_id,doctors_id) VALUES (@PatientId,@DoctorId);";
+            cmd.CommandText="@INSERT INTO doctors_patients (patients_id,doctors_id) VALUES (@PatientId,@DoctorId);";
 
             MySqlParameter patients_id =new MySqlParameter();
             patients_id.ParameterName="@PatientId";
-            patients_id.Value=newDoctor.GetId();
+            patients_id.Value=_id;
             cmd.Parameters.Add(patients_id);
 
             MySqlParameter doctors_id = new MySqlParameter();
@@ -143,7 +143,8 @@ namespace DoctorOffice.Models
             cmd.ExecuteNonQuery();
 
             conn.Close();
-            if(conn !=null){
+            if(conn !=null)
+            {
                 conn.Dispose();
             }
 
@@ -152,7 +153,38 @@ namespace DoctorOffice.Models
 
         public List<Doctor> GetDoctor()
         {
+            MySqlConnection conn =DB.Connection();
+            conn.Open();
 
+            var cmd=conn.CreateCommand() as MySqlCommand;
+            cmd.CommandText=@"SELECT patients.* FROM doctors
+            JOIN doctors_patients ON (doctors_patients.patients_id=patients.id)
+            JOIN doctors_patients ON (doctors_patients.doctors_id=doctors.id) 
+            WHERE patients.id =@patientId;";
+
+            MySqlParameter patientId=new MySqlParameter();
+            patientId.ParameterName="@patientId";
+            patientId.Value=_id;
+            cmd.Parameters.Add(patientId);
+
+            MySqlDataReader rdr =cmd.ExecuteReader() as MySqlDataReader;
+            List<Doctor> doctors=new List<Doctor>{};
+
+            while(rdr.Read())
+            {
+                int DoctorId=rdr.GetInt32(0);
+                string doctorName=rdr.GetString(1);
+                Doctor newDoctor =new Doctor(doctorName,DoctorId);
+                doctors.Add(newDoctor);
+            }
+
+            conn.Close();
+            if (conn != null)
+            {
+                conn.Dispose();
+            }
+            return doctors;
+        
         }
 
     }
