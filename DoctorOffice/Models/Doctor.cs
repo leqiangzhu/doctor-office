@@ -9,21 +9,15 @@ namespace DoctorOffice.Models
     {
         private int _id;
         private string _name;
-        private string _specialty;
 
-        public Doctor(string newName, string newSpecialty, int newId =0)
+        public Doctor(string newName, int newId =0)
         {
             _name = newName;
-            _specialty = newSpecialty;
             _id = newId;
         }
         public string GetName()
         {
             return _name;
-        }
-        public string GetSpecialty()
-        {
-            return _specialty;
         }
         public int GetId()
         {
@@ -47,14 +41,14 @@ namespace DoctorOffice.Models
         public override int GetHashCode()
         {
             string allHash = this.GetName() + this.GetSpecialty();
-            return allHash;
+            return allHash.GetHashCode();
         }
         public void Save()
         {
             MySqlConnection conn = DB.Connection();
             conn.Open();
 
-            var cmd = conn.CreateComman() as MySqlCommand;
+            var cmd = conn.CreateCommand() as MySqlCommand;
             cmd.CommandText = @"INSERT INTO doctors (doctor_name, doctor_specialty) VALUES (@doctorName, @doctorSpecialty);";
 
             MySqlParameter doctorName = new MySqlParameter();
@@ -105,7 +99,7 @@ namespace DoctorOffice.Models
 
         public static Doctor Find(int id)
         {
-            MySqlConnection conn = MySqlConnection();
+            MySqlConnection conn = DB.Connection();
             conn.Open();
 
             var cmd = conn.CreateCommand() as MySqlCommand;
@@ -136,6 +130,69 @@ namespace DoctorOffice.Models
                 conn.Dispose();
             }
             return newDoctor;
+        }
+
+        public void AddPatient(Patient newPatient)
+        {
+            MySqlConnection conn = DB.Connection();
+            conn.Open();
+
+            var cmd = conn.CreateCommand() as MySqlCommand;
+            cmd.CommandText = @"INSERT INTO doctors_patients (doctor_id, patient_id) VALUES (@DoctorId, @PatientId);";
+
+            MySqlParameter doctor_id = new MySqlParameter();
+            doctor_id.ParameterName = "@DoctorId";
+            doctor_id.Value = _id;
+            cmd.Parameters.Add(doctor_id);
+
+            MySqlParameter patient_id = new MySqlParameter();
+            patient_id.ParameterName = "@PatientId";
+            patient_id.Value = newPatient.GetId();
+            cmd.Parameters.Add(patient_id);
+
+            cmd.ExecuteNonQuery();
+
+            conn.Close();
+            if (conn != null)
+            {
+                conn.Dispose();
+            }
+        }
+
+        public List<Patient> GetPatient()
+        {
+            MySqlConnection conn = DB.Connection();
+            conn.Open();
+            MySqlCommand cmd = conn.CreateCommand() as MySqlCommand;
+
+            cmd.CommandText = @"SELECT patients.* FROM doctors
+            JOIN doctors_patients ON (doctors.id = doctors_patients.doctor_id)
+            JOIN doctors_patients ON (doctors_patients.patient_id = patients.id)
+            WHERE doctors.id = @DoctorsId;";
+
+            MySqlParameter doctorIdParameter = new MySqlParameter();
+            doctorIdParameter.ParameterName = @"DoctorsId";
+            doctorIdParameter.Value = _id;
+            cmd.Parameters.Add(doctorIdParameter);
+
+            MySqlDataReader rdr = cmd.ExecuteReader() as MySqlDataReader;
+            List<Patient> patients = new List<Patient> {};
+
+            while(rdr.Read())
+            {
+                int patientId = rdr.GetInt32(0);
+                string patientName = rdr.GetString(1);
+                DateTime patientBirthday = rdr.GetDateTime(2);
+                Patient newPatient = new Patient(patientName, patientBirthday, patientId);
+                patients.Add(newPatient);
+            }
+
+            conn.Close();
+            if (conn != null)
+            {
+                conn.Dispose();
+            }
+            return patients;
         }
                  
     }

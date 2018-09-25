@@ -15,7 +15,7 @@ namespace DoctorOffice.Models
         {
             _name = newName;
             _birthday = newBirthday;
-            _id = id;
+            _id = newId;
         }
 
         public string GetName()
@@ -78,7 +78,7 @@ namespace DoctorOffice.Models
              Patient newPatient = new Patient(patientName, patientBirthday, patientId);
              allPatients.Add(newPatient);
             }
-            
+
             conn.Close();
             if (conn !=null)
             {
@@ -121,7 +121,39 @@ namespace DoctorOffice.Models
             }
             return newPatient;
         }
-  
+
+        public void AddDoctor(Patient newDoctor)
+        {
+            MySqlConnection conn=DB.Connection();
+            conn.Open();
+
+            var cmd =conn.CreateCommand() as MySqlCommand;
+            cmd.CommandText="@INSERT INTO patients_doctors (patients_id,doctors_id) VALUES (@PatientId,@DoctorId);";
+
+            MySqlParameter patients_id =new MySqlParameter();
+            patients_id.ParameterName="@PatientId";
+            patients_id.Value=newDoctor.GetId();
+            cmd.Parameters.Add(patients_id);
+
+            MySqlParameter doctors_id = new MySqlParameter();
+            doctors_id.ParameterName = "@DoctorId";
+            doctors_id.Value = newDoctor.GetId();
+            cmd.Parameters.Add(doctors_id);
+
+            cmd.ExecuteNonQuery();
+
+            conn.Close();
+            if(conn !=null){
+                conn.Dispose();
+            }
+
+
+        }
+
+        // public List<Patient> GetPatient()
+        // {
+
+        // }
 
     }
 }
