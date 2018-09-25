@@ -122,7 +122,7 @@ namespace DoctorOffice.Models
             return newPatient;
         }
 
-        public void AddDoctor(Patient newDoctor)
+        public void AddDoctor(Doctor newDoctor)
         {
             MySqlConnection conn=DB.Connection();
             conn.Open();
