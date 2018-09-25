@@ -150,10 +150,10 @@ namespace DoctorOffice.Models
 
         }
 
-        // public List<Patient> GetPatient()
-        // {
+        public List<Doctor> GetDoctor()
+        {
 
-        // }
+        }
 
     }
 }

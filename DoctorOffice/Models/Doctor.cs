@@ -33,14 +33,13 @@ namespace DoctorOffice.Models
             {
                 Doctor newDoctor = (Doctor) otherDoctor;
                 bool idEquality = this.GetId() == newDoctor.GetId();
-                bool specialtyEquality = this.GetSpecialty() == newDoctor.GetSpecialty();
                 bool nameEquality = this.GetName() == newDoctor.GetName();
-                return(idEquality && specialtyEquality && nameEquality);
+                return(idEquality && specialtyEquality);
             }
         }
         public override int GetHashCode()
         {
-            string allHash = this.GetName() + this.GetSpecialty();
+            string allHash = this.GetName();
             return allHash.GetHashCode();
         }
         public void Save()
@@ -49,17 +48,12 @@ namespace DoctorOffice.Models
             conn.Open();
 
             var cmd = conn.CreateCommand() as MySqlCommand;
-            cmd.CommandText = @"INSERT INTO doctors (doctor_name, doctor_specialty) VALUES (@doctorName, @doctorSpecialty);";
+            cmd.CommandText = @"INSERT INTO doctors (doctor_name) VALUES (@doctorName);";
 
             MySqlParameter doctorName = new MySqlParameter();
             doctorName.ParameterName = "@doctorName";
             doctorName.Value = this._name;
             cmd.Parameters.Add(doctorName);
-
-            MySqlParameter doctorSpecialty = new MySqlParameter();
-            doctorSpecialty.ParameterName = "@doctorSpecialty";
-            doctorSpecialty.Value = this._specialty;
-            cmd.Parameters.Add(doctorSpecialty);
 
             cmd.ExecuteNonQuery();
             _id = (int) cmd.LastInsertedId;
@@ -77,7 +71,7 @@ namespace DoctorOffice.Models
             conn.Open();
 
             var cmd = conn.CreateCommand() as MySqlCommand;
-            cmd.CommandText = "@SELECT * FROM dcotors;";
+            cmd.CommandText = "@SELECT * FROM doctors;";
 
             var rdr = cmd.ExecuteReader() as MySqlDataReader;
             
@@ -85,8 +79,7 @@ namespace DoctorOffice.Models
             {
                 int doctorId = rdr.GetInt32(0);
                 string doctorName = rdr.GetString(1);
-                string doctorSpecialty = rdr.GetString(2);
-                Doctor newDoctor = new Doctor(doctorName, doctorSpecialty, doctorId);
+                Doctor newDoctor = new Doctor(doctorName, doctorId);
                 allDoctors.Add(newDoctor);
             }
             conn.Close();
@@ -113,16 +106,14 @@ namespace DoctorOffice.Models
             var rdr = cmd.ExecuteReader() as MySqlDataReader;
             int doctorId = 0;
             string doctorName = "";
-            string doctorSpecialty = "";
 
             while(rdr.Read())
             {
                 doctorId = rdr.GetInt32(0);
                 doctorName = rdr.GetString(1);
-                doctorSpecialty = rdr.GetString(2);
             }
 
-            Doctor newDoctor = new Doctor(doctorName, doctorSpecialty, doctorId);
+            Doctor newDoctor = new Doctor(doctorName, doctorId);
 
             conn.Close();
             if (conn!=null)
@@ -193,6 +184,14 @@ namespace DoctorOffice.Models
                 conn.Dispose();
             }
             return patients;
+        }
+        public void AddSpecialty(Specialty newSpecialty)
+        {
+
+        }
+        public List<Specialty> GetSpecialty()
+        {
+
         }
                  
     }
