@@ -102,6 +102,41 @@ namespace DoctorOffice.Models
             }
             return allDoctors;
         }
+
+        public static Doctor Find(int id)
+        {
+            MySqlConnection conn = MySqlConnection();
+            conn.Open();
+
+            var cmd = conn.CreateCommand() as MySqlCommand;
+            cmd.CommandText = @"SELECT * FROM doctors WHERE id = (@searchId);";
+
+            MySqlParameter searchId = new MySqlParameter();
+            searchId.ParameterName = "@searchId";
+            searchId.Value = id;
+            cmd.Parameters.Add(searchId);
+
+            var rdr = cmd.ExecuteReader() as MySqlDataReader;
+            int doctorId = 0;
+            string doctorName = "";
+            string doctorSpecialty = "";
+
+            while(rdr.Read())
+            {
+                doctorId = rdr.GetInt32(0);
+                doctorName = rdr.GetString(1);
+                doctorSpecialty = rdr.GetString(2);
+            }
+
+            Doctor newDoctor = new Doctor(doctorName, doctorSpecialty, doctorId);
+
+            conn.Close();
+            if (conn!=null)
+            {
+                conn.Dispose();
+            }
+            return newDoctor;
+        }
                  
     }
 }
