@@ -71,7 +71,7 @@ namespace DoctorOffice.Models
             conn.Open();
 
             var cmd = conn.CreateCommand() as MySqlCommand;
-            cmd.CommandText = "@SELECT * FROM doctors;";
+            cmd.CommandText = @"SELECT * FROM doctors;";
 
             var rdr = cmd.ExecuteReader() as MySqlDataReader;
             

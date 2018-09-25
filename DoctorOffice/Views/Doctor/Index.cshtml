@@ -1,0 +1,16 @@
+
+
+<h1>doctors</h1>
+
+@foreach (var doctor in Model)
+{
+    <li><a href="doctor/@doctor.GetId()">@doctor.GetName()</a></li>
+}
+
+<form action="/doctor" method="POST">
+<label for ="new-doctor">Add a doctor name!</label>
+  <input id ="new-doctor" name="new-doctor" type="text">
+
+  <button type="submit">Submit</button>
+
+</form>

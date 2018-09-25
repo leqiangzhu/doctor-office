@@ -13,5 +13,20 @@ namespace DoctorOffice.Controllers
             return  View(allDoctors);
 
         }
+
+         [HttpPost("/Doctor")]
+        public ActionResult Create()
+        {
+            
+            Doctor newDoctor =new Doctor(Request.Form["new-doctor"]);
+            newDoctor.Save();
+            List<Doctor> allDoctors= Doctor.GetAll();
+             return RedirectToAction("Index");
+
+        }
+
+
+
+
     }
 }
